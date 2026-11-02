@@ -1,0 +1,10 @@
+{
+  "id": "skill-zip-export",
+  "name": "Skill Zip Export",
+  "version": "1.0.0",
+  "minAppVersion": "1.5.0",
+  "description": "Exports a note as a Claude skill zip, with SKILL.md built from the note properties and the scripts, references, and assets subfolders included.",
+  "author": "Sevetech",
+  "authorUrl": "https://sites.google.com/view/paperstackpro/home",
+  "isDesktopOnly": true
+}
