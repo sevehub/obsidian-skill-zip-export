@@ -59,8 +59,11 @@ module.exports = class SkillZipPlugin extends Plugin {
     // Registered after layout is ready, otherwise existing files fire "create" at startup.
     this.app.workspace.onLayoutReady(() => {
       this.registerEvent(this.app.vault.on("create", (f) => this.scaffold(f)));
+        this.registerEvent(this.app.vault.on("rename", (f, oldPath) => this.syncFolder(f, oldPath)));
     });
   }
+
+
 
   // New note directly inside the skills folder -> <note>/<note>.md plus subfolders.
   async scaffold(file) {
@@ -86,7 +89,22 @@ module.exports = class SkillZipPlugin extends Plugin {
       );
     }
   }
+// Renaming the main note of a skill folder renames the folder as well.
+async syncFolder(file, oldPath) {
+  if (!(file instanceof TFile) || file.extension !== "md") return;
+  if (!this.settings.skillsFolder.trim()) return;
+  const root = normalizePath(this.settings.skillsFolder);
+  const folder = file.parent;
+  if (!folder || !folder.parent || folder.parent.path !== root) return;
+  if (!oldPath.startsWith(folder.path + "/")) return;
 
+  const oldBase = oldPath.split("/").pop().replace(/\.md$/, "");
+  if (oldBase !== folder.name || file.basename === folder.name) return;
+
+  const target = `${root}/${file.basename}`;
+  if (this.app.vault.getAbstractFileByPath(target)) return;
+  await this.app.fileManager.renameFile(folder, target);
+}
   async exportSkill() {
     const file = this.app.workspace.getActiveFile();
     if (!file) return new Notice("No active note.");

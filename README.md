@@ -62,9 +62,19 @@ my-skill.zip
 
 Only `scripts`, `references`, and `assets` next to the note are included. Files that Obsidian does not display (for example `.py` or `.ps1`) must be added through the file system; they are copied correctly.
 
+
+
+### Running the export
+
+1. Open the skill note so that it is the active note.
+2. Open the command palette (Ctrl+P, or Cmd+P on macOS).
+3. Run **Skill Zip Export: Export active note as Claude skill (zip)**.
+
+A notice shows the path of the created file. The zip is written to the output folder from the settings; Obsidian does not display zip files in the file explorer, so the file is opened through the system file manager. A keyboard shortcut can be assigned under Settings, Hotkeys, by searching for "Skill Zip Export". If the export fails, a notice names the missing item (for example the `description` property), and further details are shown in the developer console (Ctrl+Shift+I).
+
 ### Automatic subtree
 
-When a new note is created directly inside the skills folder, the plugin creates a folder named after the note, adds the three subfolders, and moves the note into the new folder. An empty note receives empty `name` and `description` properties. The folder keeps the note name at the time of creation; renaming the note later does not rename the folder, and the skill name is always read from the `name` property.
+When a new note is created directly inside the skills folder, the plugin creates a folder named after the note, adds the three subfolders, and moves the note into the new folder. An empty note receives empty `name` and `description` properties. Renaming the note afterwards (for example from `Untitled`) renames the folder as well, provided that the note had the same name as its folder and that no folder with the new name exists. The skill name in the archive is always read from the `name` property, and the file name is used only if the property is missing.
 
 ## Settings
 
