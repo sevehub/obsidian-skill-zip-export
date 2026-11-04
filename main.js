@@ -30,6 +30,42 @@ function zipFolder(parentDir, folderName, zipPath) {
     }
   });
 }
+// Lists entry names from the zip central directory (no dependencies).
+function zipEntries(zipPath) {
+  const b = fs.readFileSync(zipPath);
+  let i = b.length - 22;
+  while (i >= 0 && b.readUInt32LE(i) !== 0x06054b50) i--;
+  if (i < 0) throw new Error("Not a valid zip");
+  const count = b.readUInt16LE(i + 10);
+  let p = b.readUInt32LE(i + 16);
+  const names = [];
+  for (let n = 0; n < count; n++) {
+    if (b.readUInt32LE(p) !== 0x02014b50) throw new Error("Corrupt zip directory");
+    const len = b.readUInt16LE(p + 28);
+    const extra = b.readUInt16LE(p + 30);
+    const com = b.readUInt16LE(p + 32);
+    names.push(b.toString("utf8", p + 46, p + 46 + len));
+    p += 46 + len + extra + com;
+  }
+  return names;
+}
+
+// Paths mentioned in the body that do not exist (case-sensitive).
+function missingRefs(dir, body) {
+  const refs = new Set(body.match(/\b(?:scripts|references|assets)\/[\w.\-\/]+\w/g) || []);
+  const bad = [];
+  for (const r of refs) {
+    let cur = dir;
+    let ok = true;
+    for (const part of r.split("/")) {
+      if (!fs.existsSync(cur) || !fs.readdirSync(cur).includes(part)) { ok = false; break; }
+      cur = path.join(cur, part);
+    }
+    if (!ok) bad.push(r);
+  }
+  return bad;
+}
+
 
 module.exports = class SkillZipPlugin extends Plugin {
   async onload() {
@@ -124,6 +160,8 @@ async syncFolder(file, oldPath) {
       // Additional material next to the note.
       const noteDir = path.join(base, path.dirname(file.path));
       for (const sub of SUBFOLDERS) {
+const missing = missingRefs(dir, body);
+if (missing.length) throw new Error(`Missing or case-mismatched: ${missing.join(", ")}`);
         const src = path.join(noteDir, sub);
         if (fs.existsSync(src)) {
           fs.cpSync(src, path.join(dir, sub), { recursive: true });
