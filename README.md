@@ -94,5 +94,7 @@ Settings, Capabilities, Skills, Upload skill (the wording may differ between ver
 
 ## License
 
+
+
 MIT
 
